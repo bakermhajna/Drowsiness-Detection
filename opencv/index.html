@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Camera Feed and Frame Processing Example</h1>
+    <video hidden="true" id="cameraFeed" width="640" height="480" autoplay></video>
+    <canvas id="outputCanvas" width="640" height="480"></canvas>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('outputCanvas');
+            const context = canvas.getContext('2d');
+
+            // Access the user's camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    // Set the video source to the camera stream
+                    video.srcObject = stream;
+
+                    // Start processing frames
+                    processFrames();
+                })
+                .catch((error) => {
+                    console.error('Error accessing camera:', error);
+                });
+
+            function processFrames() {
+                // Draw the current frame on the canvas
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Process the frame using your custom function
+                // For example, you can access the image data with context.getImageData()
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const processedImageData = processFrameFunction(imageData);
+
+                // Draw the processed image data back to the canvas
+                context.putImageData(processedImageData, 0, 0);
+
+                // Request the next animation frame
+                requestAnimationFrame(processFrames);
+            }
+
+            function processFrameFunction(imageData) {
+                console.log(imageData)
+                return imageData;
+            }
+        });
+    </script>
+</body>
+</html>

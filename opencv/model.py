@@ -1,11 +1,9 @@
 import cv2
 import urllib.request as urlreq
 import os
-import matplotlib.pyplot as plt
 import pygame
 from scipy.spatial import distance
 from imutils import face_utils
-import imutils
 import threading
 
 def loadfacedetectionmodel():
@@ -58,7 +56,7 @@ if __name__ == "__main__":
     
     detector=loadfacedetectionmodel()
     landmarksmodel=loadfacelandmarkmodel()
-    cap=cv2.VideoCapture(1) 
+    cap=cv2.VideoCapture(0) 
     while True:
         ret, frame=cap.read()
         # frame = imutils.resize(frame, width=450)

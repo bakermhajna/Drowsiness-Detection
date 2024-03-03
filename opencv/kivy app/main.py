@@ -6,6 +6,15 @@ from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 import cv2
 import numpy as np
+import cv2
+import urllib.request as urlreq
+import os
+import pygame
+from scipy.spatial import distance
+from imutils import face_utils
+import threading
+
+
 
 Builder.load_string('''
 <CameraClick>:
@@ -31,13 +40,14 @@ class CameraClick(BoxLayout):
         self.is_camera_playing = False
         self.kivy_image = self.ids.kivy_image
         self.texture = None
+        self.model=Model()
 
     def toggle_camera(self):
         if self.is_camera_playing:
             self.capture.release()
             self.is_camera_playing = False
         else:
-            self.capture = cv2.VideoCapture(1)  # Use 0 for default camera, you can change it accordingly
+            self.capture = cv2.VideoCapture(0)  # Use 0 for default camera, you can change it accordingly
             self.is_camera_playing = True
             Clock.schedule_interval(self.update_image, 1 / 30.0)  # Update the image every 1/30 seconds
 
@@ -45,6 +55,7 @@ class CameraClick(BoxLayout):
         if self.is_camera_playing:
             ret, frame = self.capture.read()
             if ret:
+                self.model.model_function(frame)
                 self.texture = self.convert_frame_to_texture(frame)
                 self.kivy_image.texture = self.texture
 
@@ -69,6 +80,103 @@ class CameraClick(BoxLayout):
 class TestCamera(App):
     def build(self):
         return CameraClick()
+
+
+class Model:
+    def __init__(self):
+        (self.lStart, self.lEnd) = face_utils.FACIAL_LANDMARKS_68_IDXS["left_eye"]
+        (self.rStart, self.rEnd) = face_utils.FACIAL_LANDMARKS_68_IDXS["right_eye"]
+        self.thresh = 0.19
+        self.frame_check = 10
+        self.counter=0
+        self.sound_thread_started=False
+        self.init_sound()
+        self.detector=self.loadfacedetectionmodel()
+        self.landmarksmodel=self.loadfacelandmarkmodel()
+    
+    
+    def model_function(self,frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces=self.detector(gray)
+        landmarks=[]
+        try:
+            landmarks=self.landmarksmodel(gray,faces)
+        except:
+            print("there is no face")
+            return
+            cv2.imshow("Frame", frame)
+            key = cv2.waitKey(1) & 0xFF
+            # if key == ord("q"):
+            #     break
+            # continue
+        leftEye = landmarks[1][0][0][self.lStart:self.lEnd]
+        rightEye = landmarks[1][0][0][self.rStart:self.rEnd]
+        leftEAR = self.eye_aspect_ratio(leftEye)
+        rightEAR = self.eye_aspect_ratio(rightEye)
+        ear = (leftEAR + rightEAR) / 2.0
+        print(ear)
+        # leftEyeHull = leftEye.astype(int)
+        # rightEyeHull = rightEye.astype(int)
+        # cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
+        # cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+        if ear < self.thresh:
+            self.counter += 1
+            if self.counter == self.frame_check:
+                
+                sound_thread = threading.Thread(target=self.play_sound)
+                sound_thread.start()
+                cv2.putText(frame, "****************ALERT!****************", (10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                cv2.putText(frame, "****************ALERT!****************", (10,325),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                
+                
+        else:
+            self.counter = 0
+        cv2.imshow("Frame", frame)
+        key = cv2.waitKey(1) & 0xFF
+        # if key == ord("q"):
+        #     break
+
+
+    def loadfacedetectionmodel(self):
+        haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt2.xml"
+        haarcascadePath = "Drowsiness-Detection\\opencv\\assets\\haarcascade_frontalface_alt2.xml"
+        if (os.path.exists(haarcascadePath)):
+            print("File exists")
+        else:
+            urlreq.urlretrieve(haarcascade_url, haarcascadePath)
+            print("File downloaded")
+        detector = cv2.CascadeClassifier(haarcascadePath)
+        return detector.detectMultiScale
+
+
+    def loadfacelandmarkmodel(self):
+        LBFmodel_url = "https://github.com/kurnianggoro/GSOC2017/raw/master/data/lbfmodel.yaml"
+        LBFmodelPath = "Drowsiness-Detection\\opencv\\assets\\LFBmodel.yaml"
+        if (os.path.exists(LBFmodelPath)):
+            print("File exists")
+        else:
+            urlreq.urlretrieve(LBFmodel_url, LBFmodelPath)
+            print("File downloaded")
+        landmark_detector  = cv2.face.createFacemarkLBF()
+        landmark_detector.loadModel(LBFmodelPath)
+        return landmark_detector.fit
+
+    def init_sound(self):
+        pygame.mixer.init()
+        pygame.mixer.music.load('Drowsiness-Detection\\opencv\\assets\\emergency-alarm.mp3')  # Replace with the path to your sound file
+
+    def play_sound(self):
+        pygame.mixer.music.play()
+
+    def eye_aspect_ratio(self,eye):
+        A = distance.euclidean(eye[1], eye[5])
+        B = distance.euclidean(eye[2], eye[4])
+        C = distance.euclidean(eye[0], eye[3])
+        ear = (A + B) / (2.0 * C)
+        return ear
+
 
 if __name__ == '__main__':
     TestCamera().run()

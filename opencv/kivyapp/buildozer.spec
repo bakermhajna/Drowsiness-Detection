@@ -124,7 +124,7 @@ fullscreen = 0
 #android.ndk_api = 21
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = /home/kha12/androidNDK/android-ndk-r21e
+android.ndk_path = /home/kha12/androidNDK/android-ndk-r26c
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =

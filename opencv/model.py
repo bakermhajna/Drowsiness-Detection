@@ -33,11 +33,11 @@ def loadfacelandmarkmodel():
 
 def init_sound():
     pygame.mixer.init()
-    pygame.mixer.music.load('opencv\\assets\\emergencyAlarm.mp3')  # Replace with the path to your sound file
+    pygame.mixer.music.load('opencv\\assets\\emergencyAlarm.mp3')  
 
 def play_sound():
-    pygame.mixer.music.play()
-    #playsound('opencv\\assets\\emergencyAlarm.mp3')
+    # pygame.mixer.music.play()
+    playsound('opencv\\assets\\emergencyAlarm.mp3')
 
 def eye_aspect_ratio(eye):
 	A = distance.euclidean(eye[1], eye[5])
@@ -104,8 +104,3 @@ if __name__ == "__main__":
             break
     cv2.destroyAllWindows()
     cap.release() 
-
-
-
-
-

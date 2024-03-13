@@ -5,6 +5,7 @@ import pygame
 from scipy.spatial import distance
 from imutils import face_utils
 import threading
+from playsound import playsound
 
 def loadfacedetectionmodel():
     haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt2.xml"
@@ -32,10 +33,11 @@ def loadfacelandmarkmodel():
 
 def init_sound():
     pygame.mixer.init()
-    pygame.mixer.music.load('opencv\\assets\\emergency-alarm.mp3')  # Replace with the path to your sound file
+    pygame.mixer.music.load('opencv\\assets\\emergencyAlarm.mp3')  # Replace with the path to your sound file
 
 def play_sound():
     pygame.mixer.music.play()
+    #playsound('opencv\\assets\\emergencyAlarm.mp3')
 
 def eye_aspect_ratio(eye):
 	A = distance.euclidean(eye[1], eye[5])

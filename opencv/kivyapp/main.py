@@ -6,10 +6,9 @@ from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 import cv2
 import numpy as np
-import cv2
 import urllib.request as urlreq
 import os
-import pygame
+from pygame import mixer
 from scipy.spatial import distance
 from imutils import face_utils
 import threading
@@ -141,7 +140,7 @@ class Model:
 
     def loadfacedetectionmodel(self):
         haarcascade_url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_alt2.xml"
-        haarcascadePath = "Drowsiness-Detection\\opencv\\assets\\haarcascade_frontalface_alt2.xml"
+        haarcascadePath = "opencv\\assets\\haarcascade_frontalface_alt2.xml"
         if (os.path.exists(haarcascadePath)):
             print("File exists")
         else:
@@ -153,7 +152,7 @@ class Model:
 
     def loadfacelandmarkmodel(self):
         LBFmodel_url = "https://github.com/kurnianggoro/GSOC2017/raw/master/data/lbfmodel.yaml"
-        LBFmodelPath = "Drowsiness-Detection\\opencv\\assets\\LFBmodel.yaml"
+        LBFmodelPath = "opencv\\assets\\LFBmodel.yaml"
         if (os.path.exists(LBFmodelPath)):
             print("File exists")
         else:
@@ -164,11 +163,11 @@ class Model:
         return landmark_detector.fit
 
     def init_sound(self):
-        pygame.mixer.init()
-        pygame.mixer.music.load('Drowsiness-Detection\\opencv\\assets\\emergency-alarm.mp3')  # Replace with the path to your sound file
+        mixer.init()
+        mixer.music.load('opencv\\assets\\emergencyAlarm.mp3')  # Replace with the path to your sound file
 
     def play_sound(self):
-        pygame.mixer.music.play()
+        mixer.music.play()
 
     def eye_aspect_ratio(self,eye):
         A = distance.euclidean(eye[1], eye[5])

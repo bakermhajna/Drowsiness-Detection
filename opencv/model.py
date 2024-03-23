@@ -36,8 +36,8 @@ def init_sound():
     pygame.mixer.music.load('opencv\\assets\\emergencyAlarm.mp3')  
 
 def play_sound():
-    # pygame.mixer.music.play()
-    playsound('opencv\\assets\\emergencyAlarm.mp3')
+    pygame.mixer.music.play()
+    #playsound('opencv\\assets\\emergencyAlarm.mp3')
 
 def eye_aspect_ratio(eye):
 	A = distance.euclidean(eye[1], eye[5])

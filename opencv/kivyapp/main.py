@@ -1,7 +1,6 @@
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 from kivy.clock import Clock
 import cv2
@@ -83,59 +82,45 @@ class TestCamera(App):
 
 class Model:
     def __init__(self):
-        (self.lStart, self.lEnd) = face_utils.FACIAL_LANDMARKS_68_IDXS["left_eye"]
+        (self.lStart, self.lEnd) = face_utils.FACIAL_LANDMARKS_68_IDXS["left_eye"]   #מחזיר שתי נקודות התחלתית וסופית לעין שמאל 
         (self.rStart, self.rEnd) = face_utils.FACIAL_LANDMARKS_68_IDXS["right_eye"]
-        self.thresh = 0.19
-        self.frame_check = 10
-        self.counter=0
-        self.sound_thread_started=False
-        self.init_sound()
+        self.thresh = 0.19  #
+        self.frame_check = 10  # בדיקת frames
+        self.counter=0  # ספירת תמונות שנסגרה העין
+        self.init_sound() # אתחול קובץ אודיו
         self.detector=self.loadfacedetectionmodel()
         self.landmarksmodel=self.loadfacelandmarkmodel()
     
     
     def model_function(self,frame):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces=self.detector(gray)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)# מחזיר תמונה שחור לבן
+        faces=self.detector(gray) #מחזיר מערך בגודל 4
         landmarks=[]
         try:
             landmarks=self.landmarksmodel(gray,faces)
         except:
             print("there is no face")
             return
-            cv2.imshow("Frame", frame)
-            key = cv2.waitKey(1) & 0xFF
-            # if key == ord("q"):
-            #     break
-            # continue
-        leftEye = landmarks[1][0][0][self.lStart:self.lEnd]
-        rightEye = landmarks[1][0][0][self.rStart:self.rEnd]
-        leftEAR = self.eye_aspect_ratio(leftEye)
+        leftEye = landmarks[1][0][0][self.lStart:self.lEnd] # מחזירה 6 נקוקות של העין
+        rightEye = landmarks[1][0][0][self.rStart:self.rEnd] # arr =[1,2,3,4,5,6,7,8,9]  newarr=arr[2:4]  = [3,4,5]
+        leftEAR = self.eye_aspect_ratio(leftEye) # מחזיר יחס רוחב לגובה לעין
         rightEAR = self.eye_aspect_ratio(rightEye)
         ear = (leftEAR + rightEAR) / 2.0
         print(ear)
-        # leftEyeHull = leftEye.astype(int)
-        # rightEyeHull = rightEye.astype(int)
-        # cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-        # cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
         if ear < self.thresh:
             self.counter += 1
             if self.counter == self.frame_check:
-                
                 sound_thread = threading.Thread(target=self.play_sound)
                 sound_thread.start()
                 cv2.putText(frame, "****************ALERT!****************", (10, 30),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 cv2.putText(frame, "****************ALERT!****************", (10,325),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                
-                
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)        
         else:
             self.counter = 0
+        
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
-        # if key == ord("q"):
-        #     break
 
 
     def loadfacedetectionmodel(self):
